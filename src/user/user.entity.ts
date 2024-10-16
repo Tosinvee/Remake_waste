@@ -8,7 +8,7 @@ export class User {
     @Column({
         type: 'varchar',
         length: 98,
-        nullable: false,
+        nullable: true,
         unique: true
     })
     firstName: string;
@@ -16,7 +16,7 @@ export class User {
     @Column({
         type: 'varchar',
         length: 98,
-        nullable: false
+        nullable: true
 
     })
     lastName: string;
@@ -31,7 +31,7 @@ export class User {
     @Column({
         type: 'varchar',
         length: 98,
-        nullable: false,
+        nullable: true,
         unique: true
     })
     password: string;

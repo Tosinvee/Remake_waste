@@ -7,6 +7,8 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { ConfigService } from '@nestjs/config';
+import { Users } from './interface/user.interface';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -15,8 +17,22 @@ export class AuthService {
         private userRepository: Repository<User>,
         private userService: UserService,
         private mailService: MailService,
+        private jwtService:JwtService,
         private configService: ConfigService
     ) { }
+
+    async validateUser(email:string, password:string): Promise<Users | null>{
+       const user = await this.userService.findByEmail(email)
+       
+       if(user &&(await bcrypt.compare(password, user.password))){
+        if(!user.emailVerified){
+            await this.sendotp(user.email);
+            throw new BadRequestException('Email not verified. OTP sent to email')
+            
+        }
+       }
+       return null
+    }
 
     async sendotp(email: string): Promise<{ message: string }> {
         const otp = this.mailService.generateOtp(100000);
@@ -67,5 +83,13 @@ export class AuthService {
         }
         throw new BadRequestException('Invalid otp')
     }
+ async login(user:Users) {
+    const payload = {email:user.email, sub:user.id, roles:user.roles}
+
+    return {
+        access_token:this.jwtService.sign(payload, {expiresIn: '1hr'})
+    }
+ } 
 
 }
+

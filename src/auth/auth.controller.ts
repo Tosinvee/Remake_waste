@@ -1,6 +1,9 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dtos/signup.dto';
+import { Public } from 'src/common/decorator/public.decorator';
+import { lookup } from 'dns';
+import { LocalAuthGuard } from './guards/localAuth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -22,4 +25,12 @@ export class AuthController {
     public async regenerateOtp(@Body() body:{email: string} ){
         return this.authService.sendotp(body.email);
     }
+
+    @Public()
+    @Post('login')
+    @UseGuards(LocalAuthGuard)
+    async login(@Request() req:any){
+        return this.authService.login(req.user)
+    }
+    
 }
